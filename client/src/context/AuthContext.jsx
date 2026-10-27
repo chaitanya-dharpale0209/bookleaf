@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
+import { API_BASE_URL, getApiUrl } from '../config/api';
 
 const AuthContext = createContext(null);
 
@@ -19,7 +20,7 @@ export function AuthProvider({ children }) {
 
   // Fetch demo accounts for easy switching
   useEffect(() => {
-    fetch('/api/auth/demo-accounts')
+    fetch(getApiUrl('/api/auth/demo-accounts'))
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -29,9 +30,9 @@ export function AuthProvider({ children }) {
       .catch((err) => console.error('Error fetching demo accounts:', err));
   }, []);
 
-  // Initialize Socket.io connection
+  // Initialize Socket.io connection (pointing to API_BASE_URL if on separate domain)
   useEffect(() => {
-    const newSocket = io({
+    const newSocket = io(API_BASE_URL || window.location.origin, {
       transports: ['websocket', 'polling']
     });
 
@@ -70,7 +71,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -97,7 +98,7 @@ export function AuthProvider({ children }) {
 
   const quickSwitch = async (email) => {
     try {
-      const res = await fetch('/api/auth/quick-switch', {
+      const res = await fetch(getApiUrl('/api/auth/quick-switch'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

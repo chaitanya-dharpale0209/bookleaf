@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { BookOpen, Shield, Users, LogOut, ChevronDown, Check, Sparkles, FileText, Wifi } from 'lucide-react';
+import { getApiUrl } from '../config/api';
 
 export default function Navbar({ onOpenKnowledgeBase, onOpenDocs }) {
   const { user, author, isSocketConnected, demoAccounts, quickSwitch, logout, isAdmin } = useAuth();
@@ -25,7 +26,7 @@ export default function Navbar({ onOpenKnowledgeBase, onOpenDocs }) {
 
         {/* API Docs Button */}
         <a
-          href="/api/docs"
+          href={getApiUrl('/api/docs')}
           target="_blank"
           rel="noreferrer"
           className="demo-account-pill"

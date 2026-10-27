@@ -137,6 +137,15 @@ const PORT = process.env.PORT || 5000;
 async function startServer() {
   try {
     await db.initSchema();
+
+    // Auto-seed on first launch or ephemeral cloud restarts (Render/Railway)
+    const authorCheck = await db.get('SELECT COUNT(*) as count FROM authors');
+    if (!authorCheck || authorCheck.count === 0) {
+      console.log('No authors found in database. Auto-seeding initial BookLeaf dataset...');
+      const seed = require('./scripts/seed');
+      await seed();
+    }
+
     server.listen(PORT, () => {
       console.log(`======================================================`);
       console.log(` BookLeaf Publishing Support Portal Server Active     `);

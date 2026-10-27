@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../config/api';
 import {
   Shield,
   Filter,
@@ -77,9 +78,9 @@ export default function AdminDashboard() {
       if (searchQuery.trim()) params.append('search', searchQuery.trim());
 
       const [ticketsRes, metricsRes, aiStatusRes] = await Promise.all([
-        fetch(`/api/tickets?${params.toString()}`, { headers }),
-        fetch('/api/admin/metrics', { headers }),
-        fetch('/api/admin/ai-status', { headers })
+        fetch(getApiUrl(`/api/tickets?${params.toString()}`), { headers }),
+        fetch(getApiUrl('/api/admin/metrics'), { headers }),
+        fetch(getApiUrl('/api/admin/ai-status'), { headers })
       ]);
 
       const [ticketsData, metricsData, aiStatusData] = await Promise.all([
@@ -185,7 +186,7 @@ export default function AdminDashboard() {
     setIsWorkbenchLoading(true);
 
     try {
-      const res = await fetch(`/api/tickets/${ticketId}`, {
+      const res = await fetch(getApiUrl(`/api/tickets/${ticketId}`), {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -207,7 +208,7 @@ export default function AdminDashboard() {
     if (!selectedTicketId) return;
 
     try {
-      const res = await fetch(`/api/tickets/${selectedTicketId}`, {
+      const res = await fetch(getApiUrl(`/api/tickets/${selectedTicketId}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -230,7 +231,7 @@ export default function AdminDashboard() {
     setIsRegeneratingDraft(true);
 
     try {
-      const res = await fetch(`/api/tickets/${selectedTicketId}/regenerate-ai`, {
+      const res = await fetch(getApiUrl(`/api/tickets/${selectedTicketId}/regenerate-ai`), {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -252,7 +253,7 @@ export default function AdminDashboard() {
 
     setIsSendingResponse(true);
     try {
-      const res = await fetch(`/api/tickets/${selectedTicketId}/messages`, {
+      const res = await fetch(getApiUrl(`/api/tickets/${selectedTicketId}/messages`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -282,7 +283,7 @@ export default function AdminDashboard() {
 
     setIsAddingNote(true);
     try {
-      const res = await fetch(`/api/tickets/${selectedTicketId}/notes`, {
+      const res = await fetch(getApiUrl(`/api/tickets/${selectedTicketId}/notes`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

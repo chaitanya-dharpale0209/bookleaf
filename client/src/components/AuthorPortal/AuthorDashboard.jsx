@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../config/api';
 import {
   Book,
   PlusCircle,
@@ -48,9 +49,9 @@ export default function AuthorDashboard() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [booksRes, statsRes, ticketsRes] = await Promise.all([
-        fetch('/api/authors/books', { headers }),
-        fetch('/api/authors/stats', { headers }),
-        fetch('/api/tickets/my-tickets', { headers })
+        fetch(getApiUrl('/api/authors/books'), { headers }),
+        fetch(getApiUrl('/api/authors/stats'), { headers }),
+        fetch(getApiUrl('/api/tickets/my-tickets'), { headers })
       ]);
 
       const [booksData, statsData, ticketsData] = await Promise.all([
@@ -138,7 +139,7 @@ export default function AuthorDashboard() {
     setTicketSubmissionSuccess(null);
 
     try {
-      const res = await fetch('/api/tickets', {
+      const res = await fetch(getApiUrl('/api/tickets'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +184,7 @@ export default function AuthorDashboard() {
   const handleOpenTicketDetails = async (t) => {
     setActiveTicket(t);
     try {
-      const res = await fetch(`/api/tickets/${t.ticket_id}`, {
+      const res = await fetch(getApiUrl(`/api/tickets/${t.ticket_id}`), {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -202,7 +203,7 @@ export default function AuthorDashboard() {
 
     setIsSendingReply(true);
     try {
-      const res = await fetch(`/api/tickets/${activeTicket.ticket_id}/messages`, {
+      const res = await fetch(getApiUrl(`/api/tickets/${activeTicket.ticket_id}/messages`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
