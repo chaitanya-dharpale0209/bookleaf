@@ -28,6 +28,12 @@ This application provides:
 3. **1-Click Evaluator Mode**:
    - A dedicated quick-switcher in the navigation header allows testing between **Admin** (`admin@bookleaf.com`) and any of the **10 authors** (Priya Sharma, Rohit Kapoor, Sneha Kulkarni, Kavita Deshmukh, etc.) in a single click without repetitive logins.
 
+4. **Cross-Platform Responsive UI/UX**:
+   - **Universal Multi-Breakpoint Engine**: Seamless experience across Mobile (320px–480px, including iPhone SE & Foldables), Tablets (480px–1024px, iPads & Galaxy Tabs), and Laptops/Desktops (>1024px).
+   - **iOS Safari & Mobile WebKit Hardening**: Dynamic viewport units (`100dvh`), `viewport-fit=cover` safe-area-insets (`env(safe-area-inset-*)`), 16px input font size to eliminate unwanted auto-zoom, and `-webkit-tap-highlight-color: transparent`.
+   - **Adaptive Resolution Workbench**: Full side-by-side split screen on desktop; switches to an intelligent tabbed mobile navigation (`Chat & AI Drafter` vs `Controls, Author & Notes`) on tablets and mobile devices.
+   - **Touch & Accessibility Standards**: 44x44px minimum tap target sizes, `touch-action: manipulation` (no 300ms click delay), and swipeable tables with scroll affordance hints.
+
 ---
 
 ## 🏗️ Architecture & Technology Stack

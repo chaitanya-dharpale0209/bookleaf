@@ -16,7 +16,8 @@ import {
   HelpCircle,
   Sparkles,
   RefreshCw,
-  X
+  X,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export default function AuthorDashboard() {
@@ -499,6 +500,10 @@ export default function AuthorDashboard() {
             </div>
           ) : (
             <div className="tickets-table-container">
+              <div className="table-scroll-hint">
+                <SlidersHorizontal size={13} />
+                <span>Swipe or scroll horizontally to view all ticket data & actions →</span>
+              </div>
               <table className="custom-table">
                 <thead>
                   <tr>
@@ -758,7 +763,7 @@ export default function AuthorDashboard() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.75rem' }}>
+                <div className="form-actions-row">
                   <button
                     type="button"
                     className="btn btn-secondary"
@@ -792,8 +797,7 @@ export default function AuthorDashboard() {
       {activeTicket && ticketDetails && (
         <div className="workbench-modal-backdrop" onClick={() => setActiveTicket(null)}>
           <div
-            className="workbench-card"
-            style={{ maxWidth: '850px' }}
+            className="workbench-card author-chat-card"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="workbench-header">
@@ -810,15 +814,16 @@ export default function AuthorDashboard() {
                 </p>
               </div>
               <button
-                className="btn-ghost"
+                className="btn-ghost modal-close-btn"
                 style={{ color: '#fff' }}
                 onClick={() => setActiveTicket(null)}
+                aria-label="Close conversation modal"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="workbench-main" style={{ height: 'calc(90vh - 140px)' }}>
+            <div className="workbench-main author-chat-main">
               {/* Message Thread */}
               <div className="messages-thread">
                 {ticketDetails.messages.map((m) => {
@@ -844,10 +849,10 @@ export default function AuthorDashboard() {
               </div>
 
               {/* Author Reply Input */}
-              <div style={{ padding: '1rem 1.5rem', background: '#fff', borderTop: '1px solid var(--slate-200)' }}>
+              <div className="chat-reply-bar">
                 <form
                   onSubmit={handleSendReply}
-                  style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}
+                  className="chat-reply-form"
                 >
                   <input
                     type="text"
@@ -859,8 +864,9 @@ export default function AuthorDashboard() {
                   />
                   <button
                     type="submit"
-                    className="btn btn-primary"
+                    className="btn btn-primary chat-send-btn"
                     disabled={isSendingReply || !replyMessage.trim()}
+                    aria-label="Send reply message"
                   >
                     <Send size={16} />
                   </button>

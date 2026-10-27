@@ -39,65 +39,21 @@ export default function LoginModal() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #090d16 0%, #0f172a 100%)',
-        padding: '1.5rem',
-        color: 'var(--white)'
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '500px',
-          background: 'rgba(255, 255, 255, 0.04)',
-          backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: 'var(--radius-xl)',
-          padding: '2.5rem',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-        }}
-      >
+    <div className="login-page-wrapper">
+      <div className="login-card-container">
         {/* Brand Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div
-            style={{
-              width: '56px',
-              height: '56px',
-              background: 'linear-gradient(135deg, var(--emerald-500), var(--emerald-700))',
-              borderRadius: 'var(--radius-lg)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.75rem',
-              margin: '0 auto 1rem',
-              boxShadow: '0 0 25px rgba(16, 185, 129, 0.4)'
-            }}
-          >
+        <div className="login-brand-header">
+          <div className="login-brand-icon">
             🍃
           </div>
-          <h2 style={{ fontSize: '1.65rem', color: '#fff', fontWeight: 800 }}>BookLeaf Publishing</h2>
-          <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+          <h2>BookLeaf Publishing</h2>
+          <p>
             Author Support & Operations Communication Portal
           </p>
         </div>
 
         {error && (
-          <div
-            style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.35)',
-              color: '#fca5a5',
-              padding: '0.75rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '0.85rem',
-              marginBottom: '1.25rem'
-            }}
-          >
+          <div className="login-error-alert">
             {error}
           </div>
         )}
@@ -110,16 +66,12 @@ export default function LoginModal() {
             </label>
             <input
               type="email"
-              className="form-control"
+              className="form-control login-input"
               placeholder="e.g. priya.sharma@email.com or admin@bookleaf.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: '#fff',
-                borderColor: 'rgba(255, 255, 255, 0.15)'
-              }}
               required
+              autoComplete="email"
             />
           </div>
 
@@ -129,23 +81,18 @@ export default function LoginModal() {
             </label>
             <input
               type="password"
-              className="form-control"
+              className="form-control login-input"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: '#fff',
-                borderColor: 'rgba(255, 255, 255, 0.15)'
-              }}
               required
+              autoComplete="current-password"
             />
           </div>
 
           <button
             type="submit"
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}
+            className="btn btn-primary login-submit-btn"
             disabled={isLoading}
           >
             {isLoading ? 'Signing In...' : 'Sign In to Portal'} <ArrowRight size={16} />
@@ -153,72 +100,42 @@ export default function LoginModal() {
         </form>
 
         {/* 1-Click Demo Login Shortcuts */}
-        <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '1.5rem' }}>
-          <div
-            style={{
-              fontSize: '0.75rem',
-              color: 'var(--slate-400)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              fontWeight: 700,
-              textAlign: 'center',
-              marginBottom: '0.85rem'
-            }}
-          >
+        <div className="login-demo-section">
+          <div className="login-demo-title">
             ⚡ Quick Evaluator Demo Logins
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+          <div className="login-demo-grid">
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
-              style={{
-                background: 'rgba(245, 158, 11, 0.12)',
-                borderColor: 'rgba(245, 158, 11, 0.3)',
-                color: '#fbbf24'
-              }}
+              className="btn btn-secondary btn-sm login-demo-btn admin"
               onClick={() => handleQuickLogin('admin@bookleaf.com', 'admin123')}
             >
-              <Shield size={13} /> Ops Admin Portal
+              <Shield size={14} /> <span>Ops Admin Portal</span>
             </button>
 
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
-              style={{
-                background: 'rgba(16, 185, 129, 0.12)',
-                borderColor: 'rgba(16, 185, 129, 0.3)',
-                color: '#34d399'
-              }}
+              className="btn btn-secondary btn-sm login-demo-btn author"
               onClick={() => handleQuickLogin('priya.sharma@email.com', 'author123')}
             >
-              <User size={13} /> Priya Sharma (Author)
+              <User size={14} /> <span>Priya Sharma (Author)</span>
             </button>
 
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
-              style={{
-                background: 'rgba(59, 130, 246, 0.12)',
-                borderColor: 'rgba(59, 130, 246, 0.3)',
-                color: '#60a5fa'
-              }}
+              className="btn btn-secondary btn-sm login-demo-btn author-blue"
               onClick={() => handleQuickLogin('rohit.kapoor@email.com', 'author123')}
             >
-              <User size={13} /> Rohit Kapoor (Author)
+              <User size={14} /> <span>Rohit Kapoor (Author)</span>
             </button>
 
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
-              style={{
-                background: 'rgba(168, 85, 247, 0.12)',
-                borderColor: 'rgba(168, 85, 247, 0.3)',
-                color: '#c084fc'
-              }}
+              className="btn btn-secondary btn-sm login-demo-btn author-purple"
               onClick={() => handleQuickLogin('sneha.kulkarni@email.com', 'author123')}
             >
-              <User size={13} /> Sneha K. (In Prod.)
+              <User size={14} /> <span>Sneha K. (In Prod.)</span>
             </button>
           </div>
         </div>

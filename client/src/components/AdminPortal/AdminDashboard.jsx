@@ -53,6 +53,7 @@ export default function AdminDashboard() {
   const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [ticketDetails, setTicketDetails] = useState(null);
   const [isWorkbenchLoading, setIsWorkbenchLoading] = useState(false);
+  const [workbenchTab, setWorkbenchTab] = useState('conversation'); // 'conversation' | 'details' (responsive view)
 
   // AI Response Drafter State
   const [draftResponseText, setDraftResponseText] = useState('');
@@ -183,6 +184,7 @@ export default function AdminDashboard() {
   // Open Ticket in Resolution Workbench
   const openTicketWorkbench = async (ticketId) => {
     setSelectedTicketId(ticketId);
+    setWorkbenchTab('conversation');
     setIsWorkbenchLoading(true);
 
     try {
@@ -315,7 +317,7 @@ export default function AdminDashboard() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div className="page-header-actions">
           {/* Active AI Engine Badge */}
           <div
             style={{
@@ -451,7 +453,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Sort Controls */}
-        <div className="filter-group">
+        <div className="filter-group sort-group">
           <span style={{ fontSize: '0.82rem', color: 'var(--slate-500)', fontWeight: 600 }}>
             Sort Queue:
           </span>
@@ -469,6 +471,10 @@ export default function AdminDashboard() {
 
       {/* Tickets Queue Table */}
       <div className="tickets-table-container">
+        <div className="table-scroll-hint">
+          <SlidersHorizontal size={13} />
+          <span>Swipe or scroll horizontally to view all ticket data & actions →</span>
+        </div>
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--slate-500)' }}>
             <RefreshCw size={24} className="spin-animation" style={{ margin: '0 auto 0.5rem' }} />
@@ -623,8 +629,8 @@ export default function AdminDashboard() {
           <div className="workbench-card" onClick={(e) => e.stopPropagation()}>
             {/* Workbench Top Bar */}
             <div className="workbench-header">
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div className="workbench-title-group">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                   <span
                     style={{
                       fontFamily: 'var(--font-mono)',
@@ -645,28 +651,47 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div className="workbench-header-actions">
                 <button
                   className="btn btn-secondary btn-sm"
                   onClick={() => handleUpdateTicketField({ assigned_to: user?.name })}
                   title="Assign this ticket to yourself"
                 >
-                  <UserCheck size={14} /> Assign to Me
+                  <UserCheck size={14} /> <span className="btn-label-text">Assign to Me</span>
                 </button>
                 <button
-                  className="btn-ghost"
+                  className="btn-ghost modal-close-btn"
                   style={{ color: '#fff' }}
                   onClick={() => setSelectedTicketId(null)}
+                  aria-label="Close resolution workbench"
                 >
                   <X size={20} />
                 </button>
               </div>
             </div>
 
+            {/* Mobile View Switcher Tab Navigation (hidden on desktop) */}
+            <div className="workbench-mobile-nav">
+              <button
+                type="button"
+                className={`workbench-mobile-nav-btn ${workbenchTab === 'conversation' ? 'active' : ''}`}
+                onClick={() => setWorkbenchTab('conversation')}
+              >
+                <Bot size={15} /> <span>Chat & AI Drafter</span>
+              </button>
+              <button
+                type="button"
+                className={`workbench-mobile-nav-btn ${workbenchTab === 'details' ? 'active' : ''}`}
+                onClick={() => setWorkbenchTab('details')}
+              >
+                <SlidersHorizontal size={15} /> <span>Controls, Author & Notes</span>
+              </button>
+            </div>
+
             {/* Workbench Split Body */}
             <div className="workbench-body">
               {/* Left Column: Author Context, Financials & Controls */}
-              <div className="workbench-sidebar">
+              <div className={`workbench-sidebar ${workbenchTab === 'details' ? 'mobile-visible' : 'mobile-hidden'}`}>
                 {/* 1. Ticket Controls: Status, Category Override, Priority Override */}
                 <div>
                   <div className="sidebar-section-title">Ticket Controls & Overrides</div>
@@ -876,7 +901,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Right Column: Live Conversation + AI-Assisted Response Drafter */}
-              <div className="workbench-main">
+              <div className={`workbench-main ${workbenchTab === 'conversation' ? 'mobile-visible' : 'mobile-hidden'}`}>
                 {/* Conversation Thread */}
                 <div className="messages-thread">
                   {ticketDetails.messages.map((m) => {
@@ -908,23 +933,24 @@ export default function AdminDashboard() {
                 {/* AI-Assisted Response Generator Box */}
                 <div className="ai-draft-box">
                   <div className="ai-draft-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <span className="ai-badge-chip">
                         <Sparkles size={13} /> AI Knowledge-Base Draft
                       </span>
-                      <span style={{ fontSize: '0.78rem', color: 'var(--slate-500)' }}>
+                      <span className="ai-draft-hint">
                         Calibrated with BookLeaf policies & author data. Review & edit before sending.
                       </span>
                     </div>
 
                     <button
-                      className="btn btn-ghost btn-sm"
+                      type="button"
+                      className="btn btn-ghost btn-sm regenerate-draft-btn"
                       onClick={handleRegenerateAiDraft}
                       disabled={isRegeneratingDraft}
                       title="Regenerate fresh draft using AI & Knowledge Base"
                     >
                       <RefreshCw size={13} className={isRegeneratingDraft ? 'spin-animation' : ''} />
-                      {isRegeneratingDraft ? 'Regenerating...' : 'Regenerate Draft'}
+                      <span>{isRegeneratingDraft ? 'Regenerating...' : 'Regenerate'}</span>
                     </button>
                   </div>
 
@@ -937,11 +963,11 @@ export default function AdminDashboard() {
                     />
 
                     <div className="draft-actions-bar">
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div className="draft-quick-shortcuts">
                         {/* Knowledge Base Quick Insert Shortcuts */}
                         <button
                           type="button"
-                          className="btn btn-secondary btn-sm"
+                          className="btn btn-secondary btn-sm quick-shortcut-pill"
                           onClick={() => {
                             setDraftResponseText((prev) =>
                               prev +
@@ -953,7 +979,7 @@ export default function AdminDashboard() {
                         </button>
                         <button
                           type="button"
-                          className="btn btn-secondary btn-sm"
+                          className="btn btn-secondary btn-sm quick-shortcut-pill"
                           onClick={() => {
                             setDraftResponseText((prev) =>
                               prev +
@@ -965,7 +991,7 @@ export default function AdminDashboard() {
                         </button>
                         <button
                           type="button"
-                          className="btn btn-secondary btn-sm"
+                          className="btn btn-secondary btn-sm quick-shortcut-pill"
                           onClick={() => {
                             setDraftResponseText((prev) =>
                               prev +
@@ -979,14 +1005,14 @@ export default function AdminDashboard() {
 
                       <button
                         type="submit"
-                        className="btn btn-primary"
+                        className="btn btn-primary draft-send-btn"
                         disabled={isSendingResponse || !draftResponseText.trim()}
                       >
                         {isSendingResponse ? (
                           'Sending...'
                         ) : (
                           <>
-                            <Send size={15} /> Send Response to Author
+                            <Send size={15} /> <span>Send Response to Author</span>
                           </>
                         )}
                       </button>

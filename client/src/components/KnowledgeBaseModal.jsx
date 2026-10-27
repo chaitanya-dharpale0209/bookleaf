@@ -7,8 +7,7 @@ export default function KnowledgeBaseModal({ onClose }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-content"
-        style={{ maxWidth: '800px', height: '85vh', display: 'flex', flexDirection: 'column' }}
+        className="modal-content kb-modal-content"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
@@ -22,7 +21,8 @@ export default function KnowledgeBaseModal({ onClose }) {
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                flexShrink: 0
               }}
             >
               <BookOpen size={18} />
@@ -35,13 +35,13 @@ export default function KnowledgeBaseModal({ onClose }) {
             </div>
           </div>
 
-          <button className="btn-ghost" onClick={onClose}>
+          <button className="btn-ghost modal-close-btn" onClick={onClose} aria-label="Close modal">
             <X size={20} />
           </button>
         </div>
 
         {/* Modal Tabs */}
-        <div style={{ padding: '0.75rem 1.5rem', background: 'var(--slate-100)', borderBottom: '1px solid var(--slate-200)' }}>
+        <div className="kb-tabs-bar">
           <div className="custom-tabs" style={{ margin: 0 }}>
             <button
               className={`custom-tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
@@ -70,7 +70,7 @@ export default function KnowledgeBaseModal({ onClose }) {
           </div>
         </div>
 
-        <div className="modal-body" style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+        <div className="modal-body kb-modal-body">
           {activeTab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', fontSize: '0.9rem' }}>
               <div>
