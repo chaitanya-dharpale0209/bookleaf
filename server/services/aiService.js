@@ -175,47 +175,53 @@ Return ONLY a valid JSON object with keys: "category", "priority", "ai_draft_res
 Subject: ${subject}
 Description: ${description}`;
 
-  // Attempt Google Gemini if key provided
-  if (geminiApiKey) {
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
-          ],
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: 'application/json'
-          }
-        })
-      });
+  // 1. Attempt Google Gemini if key provided
+  if (geminiApiKey && geminiApiKey.trim()) {
+    const geminiModels = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-1.5-flash'];
+    for (const model of geminiModels) {
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(4000),
+          body: JSON.stringify({
+            contents: [
+              { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
+            ],
+            generationConfig: {
+              temperature: 0.2,
+              responseMimeType: 'application/json'
+            }
+          })
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          const parsed = JSON.parse(text);
-          return {
-            category: parsed.category || 'General Inquiry',
-            priority: parsed.priority || 'Medium',
-            ai_draft_response: parsed.ai_draft_response || '',
-            reasoning: parsed.reasoning || 'Classified by Gemini 1.5 Flash',
-            provider: 'Google Gemini 1.5 Flash',
-            latencyMs: Date.now() - startTime
-          };
+        if (response.ok) {
+          const data = await response.json();
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            const parsed = JSON.parse(text);
+            return {
+              category: parsed.category || 'General Inquiry',
+              priority: parsed.priority || 'Medium',
+              ai_draft_response: parsed.ai_draft_response || '',
+              reasoning: parsed.reasoning || `Classified by ${model}`,
+              provider: `Google Gemini (${model})`,
+              latencyMs: Date.now() - startTime
+            };
+          }
+        } else if (response.status !== 404) {
+          console.warn(`Gemini API returned status ${response.status}. Falling back gracefully.`);
+          break; // Don't loop if it's 401 or 403
         }
-      } else {
-        console.warn(`Gemini API returned status ${response.status}. Falling back gracefully.`);
+      } catch (err) {
+        // Continue to fallback
       }
-    } catch (err) {
-      console.warn(`Gemini API call failed: ${err.message}. Falling back gracefully.`);
     }
+    console.warn(`Notice: Gemini API call was unavailable or returned non-200. Gracefully falling back.`);
   }
 
-  // Attempt OpenAI if key provided
-  if (openAiApiKey) {
+  // 2. Attempt OpenAI if key provided
+  if (openAiApiKey && openAiApiKey.trim()) {
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -223,6 +229,7 @@ Description: ${description}`;
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${openAiApiKey}`
         },
+        signal: AbortSignal.timeout(4000),
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           messages: [
@@ -249,10 +256,13 @@ Description: ${description}`;
           };
         }
       } else {
-        console.warn(`OpenAI API returned status ${response.status}. Falling back gracefully.`);
+        const errorMsg = response.status === 401 
+          ? 'OpenAI API returned status 401 (Invalid API key: OpenAI keys typically start with "sk-").'
+          : `OpenAI API returned status ${response.status}.`;
+        console.warn(`${errorMsg} Falling back gracefully.`);
       }
     } catch (err) {
-      console.warn(`OpenAI API call failed: ${err.message}. Falling back gracefully.`);
+      console.warn(`OpenAI API call timed out or failed (${err.message}). Falling back gracefully.`);
     }
   }
 
