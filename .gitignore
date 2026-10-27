@@ -1,0 +1,10 @@
+node_modules/
+.env
+*.db
+*.db-journal
+client/dist
+client/node_modules
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
