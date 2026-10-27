@@ -177,13 +177,17 @@ Description: ${description}`;
 
   // 1. Attempt Google Gemini if key provided
   if (geminiApiKey && geminiApiKey.trim()) {
-    const geminiModels = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-1.5-flash'];
+    // 1A. Attempt generateContent with gemini-3.8-flash
+    const geminiModels = ['gemini-3.8-flash'];
     for (const model of geminiModels) {
       try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: AbortSignal.timeout(4000),
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': geminiApiKey
+          },
+          signal: AbortSignal.timeout(7000),
           body: JSON.stringify({
             contents: [
               { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
@@ -199,7 +203,8 @@ Description: ${description}`;
           const data = await response.json();
           const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (text) {
-            const parsed = JSON.parse(text);
+            const cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+            const parsed = JSON.parse(cleanText);
             return {
               category: parsed.category || 'General Inquiry',
               priority: parsed.priority || 'Medium',
@@ -209,15 +214,63 @@ Description: ${description}`;
               latencyMs: Date.now() - startTime
             };
           }
-        } else if (response.status !== 404) {
-          console.warn(`Gemini API returned status ${response.status}. Falling back gracefully.`);
-          break; // Don't loop if it's 401 or 403
+        } else {
+          let errorDetail = '';
+          try {
+            const errJson = await response.json();
+            errorDetail = errJson?.error?.message || JSON.stringify(errJson);
+          } catch (_) { }
+
+          console.warn(`Gemini API (${model}) generateContent returned status ${response.status}${errorDetail ? `: ${errorDetail}` : ''}.`);
         }
       } catch (err) {
-        // Continue to fallback
+        // Continue to Interactions API fallback
       }
     }
-    console.warn(`Notice: Gemini API call was unavailable or returned non-200. Gracefully falling back.`);
+
+    // 1B. Attempt Google Interactions API with gemini-3.8-flash
+    try {
+      const interactionRes = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': geminiApiKey
+        },
+        signal: AbortSignal.timeout(7000),
+        body: JSON.stringify({
+          model: 'gemini-3.8-flash',
+          input: `${systemPrompt}\n\n${userPrompt}`
+        })
+      });
+
+      if (interactionRes.ok) {
+        const data = await interactionRes.json();
+        const text = data?.outputs?.[0]?.text || data?.output_text;
+        if (text) {
+          const cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(cleanText);
+          return {
+            category: parsed.category || 'General Inquiry',
+            priority: parsed.priority || 'Medium',
+            ai_draft_response: parsed.ai_draft_response || '',
+            reasoning: parsed.reasoning || 'Classified by gemini-3.8-flash (Interactions API)',
+            provider: 'Google Gemini 3.8 Flash (Interactions)',
+            latencyMs: Date.now() - startTime
+          };
+        }
+      } else {
+        let errorDetail = '';
+        try {
+          const errJson = await interactionRes.json();
+          errorDetail = errJson?.error?.message || JSON.stringify(errJson);
+        } catch (_) { }
+        console.warn(`Gemini Interactions API returned status ${interactionRes.status}${errorDetail ? `: ${errorDetail}` : ''}.`);
+      }
+    } catch (err) {
+      // Continue to fallback
+    }
+
+    console.warn(`Notice: Gemini API calls unavailable or failed. Falling back gracefully.`);
   }
 
   // 2. Attempt OpenAI if key provided
@@ -256,9 +309,15 @@ Description: ${description}`;
           };
         }
       } else {
-        const errorMsg = response.status === 401 
+        let errorDetail = '';
+        try {
+          const errJson = await response.json();
+          errorDetail = errJson?.error?.message || errJson?.error?.code || JSON.stringify(errJson);
+        } catch (_) { }
+
+        const errorMsg = response.status === 401
           ? 'OpenAI API returned status 401 (Invalid API key: OpenAI keys typically start with "sk-").'
-          : `OpenAI API returned status ${response.status}.`;
+          : `OpenAI API returned status ${response.status}${errorDetail ? ` (${errorDetail})` : ''}.`;
         console.warn(`${errorMsg} Falling back gracefully.`);
       }
     } catch (err) {

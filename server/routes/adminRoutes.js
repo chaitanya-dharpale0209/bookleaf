@@ -63,7 +63,7 @@ router.get('/ai-status', (req, res) => {
 
   let activeProvider = 'BookLeaf Expert Rule Engine (Knowledge-Base Grounded)';
   if (geminiConfigured) {
-    activeProvider = 'Google Gemini 1.5 Flash';
+    activeProvider = 'Google Gemini 3.8 Flash';
   } else if (openAiConfigured) {
     activeProvider = 'OpenAI gpt-4o-mini';
   }

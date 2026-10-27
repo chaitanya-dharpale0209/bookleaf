@@ -167,6 +167,9 @@ async function seed() {
       authorName: t.author_name
     });
 
+    // 500ms throttle between tickets to respect free-tier RPM limits
+    await new Promise((r) => setTimeout(r, 500));
+
     await db.run(
       `INSERT INTO tickets (
         ticket_id, author_id, book_id, subject, description, status,
