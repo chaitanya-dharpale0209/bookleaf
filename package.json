@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "BookLeaf Publishing Author Support & Communication Portal",
   "main": "server/index.js",
+  "engines": {
+    "node": "20.x",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "start": "node server/index.js",
     "server": "node server/index.js",
