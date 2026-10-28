@@ -159,7 +159,7 @@ async function getAuthorTickets(req, res) {
 
 async function getAllTickets(req, res) {
   try {
-    const { status, category, priority, search, sortBy } = req.query;
+    const { status, category, priority, dateFilter, search, sortBy } = req.query;
 
     let sql = `
       SELECT t.*, a.name as author_name, a.email as author_email, a.city as author_city,
@@ -186,6 +186,16 @@ async function getAllTickets(req, res) {
     if (priority && priority !== 'All') {
       sql += ` AND t.priority = ?`;
       params.push(priority);
+    }
+
+    if (dateFilter && dateFilter !== 'All') {
+      if (dateFilter === 'today') {
+        sql += ` AND date(t.created_at) = date('now')`;
+      } else if (dateFilter === '7days') {
+        sql += ` AND t.created_at >= datetime('now', '-7 days')`;
+      } else if (dateFilter === '30days') {
+        sql += ` AND t.created_at >= datetime('now', '-30 days')`;
+      }
     }
 
     if (search && search.trim()) {

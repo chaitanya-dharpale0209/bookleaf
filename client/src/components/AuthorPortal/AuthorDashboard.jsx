@@ -361,8 +361,15 @@ export default function AuthorDashboard() {
                     <div className="book-title-meta">
                       <h3>{b.title}</h3>
                       <div className="book-genre">{b.genre}</div>
-                      <div className="book-isbn-badge">
-                        <span>ISBN:</span> {b.isbn || 'Pending Allocation'}
+                      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
+                        <div className="book-isbn-badge">
+                          <span>ISBN:</span> {b.isbn || 'Pending Allocation'}
+                        </div>
+                        {b.publication_date && (
+                          <div className="book-isbn-badge" style={{ background: 'var(--slate-100)', color: 'var(--slate-700)' }}>
+                            <span>Published:</span> {new Date(b.publication_date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -419,7 +426,12 @@ export default function AuthorDashboard() {
                           <strong>₹{b.total_royalty_earned.toLocaleString('en-IN')}</strong>
                         </div>
 
-                        <div className="royalty-metric-item pending">
+                        <div className="royalty-metric-item paid">
+                          <span>Royalty Paid</span>
+                          <strong style={{ color: 'var(--emerald-800)' }}>₹{(b.royalty_paid || 0).toLocaleString('en-IN')}</strong>
+                        </div>
+
+                        <div className="royalty-metric-item pending" style={{ gridColumn: 'span 2' }}>
                           <span>Pending Payout</span>
                           <strong>₹{b.royalty_pending.toLocaleString('en-IN')}</strong>
                         </div>

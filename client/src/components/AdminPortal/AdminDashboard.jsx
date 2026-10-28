@@ -46,6 +46,7 @@ export default function AdminDashboard() {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedPriority, setSelectedPriority] = useState('All');
+  const [selectedDate, setSelectedDate] = useState('All');
   const [sortBy, setSortBy] = useState('urgency'); // 'urgency' | 'oldest' | 'newest'
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -75,6 +76,7 @@ export default function AdminDashboard() {
       if (selectedStatus !== 'All') params.append('status', selectedStatus);
       if (selectedCategory !== 'All') params.append('category', selectedCategory);
       if (selectedPriority !== 'All') params.append('priority', selectedPriority);
+      if (selectedDate !== 'All') params.append('dateFilter', selectedDate);
       if (sortBy) params.append('sortBy', sortBy);
       if (searchQuery.trim()) params.append('search', searchQuery.trim());
 
@@ -104,7 +106,7 @@ export default function AdminDashboard() {
     if (token) {
       fetchTicketsAndMetrics();
     }
-  }, [token, selectedStatus, selectedCategory, selectedPriority, sortBy, searchQuery]);
+  }, [token, selectedStatus, selectedCategory, selectedPriority, selectedDate, sortBy, searchQuery]);
 
   // Real-Time Socket Listeners for Admin
   useEffect(() => {
@@ -449,6 +451,18 @@ export default function AdminDashboard() {
                 Priority: {p}
               </option>
             ))}
+          </select>
+
+          {/* Date Filter */}
+          <select
+            className="select-control"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+          >
+            <option value="All">All Dates</option>
+            <option value="today">Created Today</option>
+            <option value="7days">Past 7 Days</option>
+            <option value="30days">Past 30 Days</option>
           </select>
         </div>
 

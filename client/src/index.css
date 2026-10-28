@@ -712,6 +712,10 @@ a {
   color: var(--emerald-700);
 }
 
+.royalty-metric-item.paid strong {
+  color: var(--slate-800);
+}
+
 .royalty-metric-item.pending strong {
   color: var(--amber-600);
 }

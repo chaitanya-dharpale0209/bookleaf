@@ -5,6 +5,15 @@
 
 ---
 
+## 🌐 Live Deployed Application
+
+- **Live Application (Vercel)**: [https://bookleaf-sigma-sepia.vercel.app](https://bookleaf-sigma-sepia.vercel.app)
+- **Live API & Backend (Render)**: [https://bookleaf-q2sa.onrender.com](https://bookleaf-q2sa.onrender.com)
+- **Live Interactive API Documentation**: [https://bookleaf-q2sa.onrender.com/api/docs](https://bookleaf-q2sa.onrender.com/api/docs)
+- **Pre-seeded Credentials**: See [Test Login Credentials](#-test-login-credentials) below or use the **1-Click Evaluator Switcher** in the top navigation bar.
+
+---
+
 ## 🌟 Executive Summary & Key Highlights
 
 BookLeaf Publishing processes 1,200+ titles monthly across a catalog of 22,000+ books with thousands of authors across India and the US. Managing author inquiries regarding royalties, ISBN discrepancies, printing defects, and distribution availability at scale requires consistency, speed, and deep empathy.
@@ -12,13 +21,13 @@ BookLeaf Publishing processes 1,200+ titles monthly across a catalog of 22,000+ 
 This application provides:
 1. **Author Portal (Author-Facing)**:
    - **Authentication & RBAC**: Email/password authentication ensuring authors can strictly view their own catalog and tickets.
-   - **My Books Catalog**: Displays all published and in-production titles with ISBN, genre, publication date, status, MRP, copies sold, lifetime royalty earned, royalty paid, and royalty pending.
+   - **My Books Catalog**: Displays all published and in-production titles with title, ISBN, genre, publication date, status, MRP, copies sold, lifetime royalty earned, royalty paid, and royalty pending.
    - **Support Query Raising**: Modal with book selector (or general account level), subject, description, and file attachment dropzone.
    - **Real-Time Ticket Communication**: Live conversation stream without page refreshing via WebSockets.
    - **Edge-Case Resilience**: Explicit handling for titles *In Production*, titles with *₹0 royalties*, and amounts *below the ₹1,000 payout threshold* (rolling over to the next quarter).
 
 2. **Admin Portal (Operations-Facing)**:
-   - **Ticket Queue**: Interactive queue across all authors, filterable by Status, Category, Priority, and Search.
+   - **Ticket Queue**: Interactive queue across all authors, filterable by Status, Category, Priority, Date, and Search.
    - **Urgency-First Sorting**: Automatic sorting that surfaces Critical & High priority unresolved tickets first.
    - **AI Auto-Classification**: Classifies incoming queries into the 6 BookLeaf categories with full admin manual override.
    - **AI Priority Scoring**: Assigns Critical, High, Medium, or Low priority based on query severity (with admin override).
