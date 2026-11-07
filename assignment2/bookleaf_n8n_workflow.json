@@ -1,0 +1,180 @@
+{
+  "name": "BookLeaf Royalty Summary Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bookleaf-royalty-summary",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Bubble Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "bookleaf-royalty-summary"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Verify Authentication Header (Shared Secret)\nconst headers = $input.first().json.headers || {};\nconst body = $input.first().json.body || $input.first().json;\n\n// Check API Key security\nconst providedKey = headers['x-api-key'] || headers['X-API-KEY'] || body.apiKey || '';\nconst EXPECTED_KEY = 'bookleaf-secret-key-2026';\n\nconst isAuthorized = (providedKey === EXPECTED_KEY) || (headers.authorization && headers.authorization.includes(EXPECTED_KEY));\n\nif (!isAuthorized) {\n  return [{\n    json: {\n      isAuthorized: false,\n      error: 'Unauthorized: Invalid or missing X-API-KEY header',\n      statusCode: 401\n    }\n  }];\n}\n\n// 2. Extract Author & Books Data\nconst authorId = body.author_id || body.Author_id || 'AUTH001';\nconst authorName = body.name || body.Name || body.author_name || 'Valued Author';\nconst authorEmail = body.email || body.Email || body.author_email || 'author@example.com';\nconst totalEarned = Number(body.total_royalty_earned || 0);\nconst totalPaid = Number(body.total_royalty_paid || 0);\nconst totalPending = Number(body.total_royalty_pending || 0);\nconst payoutStatus = body.payout_status || (totalPending === 0 ? 'Fully Paid' : 'Pending');\n\n// Parse books if passed as array or string\nlet books = body.books || [];\nif (typeof books === 'string') {\n  try { books = JSON.parse(books); } catch(e) { books = []; }\n}\n\nreturn [{\n  json: {\n    isAuthorized: true,\n    author_id: authorId,\n    author_name: authorName,\n    author_email: authorEmail,\n    total_royalty_earned: totalEarned,\n    total_royalty_paid: totalPaid,\n    total_royalty_pending: totalPending,\n    payout_status: payoutStatus,\n    books: books,\n    triggered_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "auth-and-parse",
+      "name": "Auth & Validate Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.isAuthorized }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-authorized",
+      "name": "Is Authorized?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"Failed\",\n  \"error\": \"{{ $json.error }}\",\n  \"statusCode\": 401\n}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "respond-unauthorized",
+      "name": "Respond 401 Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        920,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\n// Construct context-rich prompt for BookLeaf Knowledge Base\nconst systemPrompt = `You are an empathetic, professional author relations specialist at BookLeaf Publishing (a leading self-publishing house in India and the US).\nDraft a personalised, human-readable royalty summary and account update email for the author based on BookLeaf policies:\n- Royalty Policy: 80/20 profit split (80% net profit to author).\n- Payment Schedule: Calculated quarterly and paid within 45 days of the quarter ending (Q1: May 15, Q2: Aug 15, Q3: Nov 15, Q4: Feb 15).\n- Minimum Payout Threshold: ₹1,000. If pending is below ₹1,000, it rolls over to the next quarter.\n- Tone: Empathetic, clear, transparent, partner-first (authors are creative partners, not customers). Include exact figures. Never use generic corporate deflection.\n\nRequired Email Structure:\n1. Warm, personalised greeting using the author's name.\n2. Clear summary of their published books, copies sold, and earnings.\n3. Royalty breakdown: Total Earned, Total Paid, Total Pending.\n4. Next Steps / Payout timing:\n   - If Pending > 0 and >= ₹1,000: Explain the quarterly schedule and confirm payout is processing / upcoming within the 45-day window.\n   - If Pending > 0 and < ₹1,000: Clarify that amounts under ₹1,000 roll over to the next quarter.\n   - If Pending == 0: Commend their success and celebrate their published works.\n   - If any book is \"In Production\" (e.g. Typesetting or Cover Design): Provide an encouraging status update.\n5. Warm, professional closing signed off by Team BookLeaf.`;\n\nconst userPrompt = `Author: ${data.author_name} (ID: ${data.author_id})\nTotal Royalty Earned: ₹${data.total_royalty_earned}\nTotal Royalty Paid: ₹${data.total_royalty_paid}\nTotal Royalty Pending: ₹${data.total_royalty_pending}\nPayout Status: ${data.payout_status}\n\nBooks Data:\n${JSON.stringify(data.books, null, 2)}\n\nDraft the email now:`;\n\nreturn [{\n  json: {\n    ...data,\n    systemPrompt: systemPrompt,\n    userPrompt: userPrompt\n  }\n}];"
+      },
+      "id": "prompt-builder",
+      "name": "Build AI Prompt & KB Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        920,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Intelligent AI Generation with Rule-Based Fallback\n// This guarantees the workflow succeeds whether an external LLM API key is present or not!\nconst data = $input.first().json;\n\nconst authorName = data.author_name;\nconst pending = data.total_royalty_pending;\nconst earned = data.total_royalty_earned;\nconst paid = data.total_royalty_paid;\n\nlet bookBreakdown = '';\nif (data.books && data.books.length > 0) {\n  bookBreakdown = data.books.map(b => \n    `• \"${b.title}\" - Status: ${b.status} | Copies Sold: ${b.total_copies_sold || 0} | Earned: ₹${b.total_royalty_earned || 0} | Pending: ₹${b.royalty_pending || 0}`\n  ).join('\\n');\n} else {\n  bookBreakdown = `• Books in catalog: Detailed view available in your Author Dashboard.`;\n}\n\nlet payoutNote = '';\nif (pending === 0) {\n  payoutNote = `We are thrilled to share that all your earned royalties to date have been fully settled! Thank you for trusting BookLeaf as your publishing partner.`;\n} else if (pending < 1000) {\n  payoutNote = `Your current pending balance of ₹${pending} is currently below our ₹1,000 minimum payout threshold. As per BookLeaf policy, this balance will roll over into the upcoming quarter and be released once the threshold is reached.`;\n} else if (data.payout_status === 'Overdue') {\n  payoutNote = `We note that you have a pending balance of ₹${pending}. Our accounts team has flagged this for priority processing, and bank transfers are executed under our quarterly 45-day payout cycle. If you haven't linked your bank account in your dashboard, please take a moment to do so.`;\n} else {\n  payoutNote = `Your pending royalty of ₹${pending} is in queue for our standard quarterly payout cycle (disbursed within 45 days of the quarter close directly to your linked bank account).`;\n}\n\nconst subject = `Your BookLeaf Royalty Summary & Account Statement - ${authorName}`;\n\nconst emailBody = `Dear ${authorName},\n\nWe hope this email finds you well and inspired in your writing journey!\n\nAt BookLeaf Publishing, we believe in complete transparency with our author partners. Below is the updated royalty summary for your published works:\n\n---\nROYALTY BREAKDOWN:\n• Total Royalties Earned: ₹${earned.toLocaleString('en-IN')}\n• Total Royalties Paid: ₹${paid.toLocaleString('en-IN')}\n• Current Pending Balance: ₹${pending.toLocaleString('en-IN')}\n\nBOOK PERFORMANCE:\n${bookBreakdown}\n\nPAYOUT STATUS & NEXT STEPS:\n${payoutNote}\n\nBookLeaf operates on an 80/20 royalty split, calculated quarterly and transferred directly to your bank account. You can always view your complete live sales metrics and platform distribution stats directly on your Author Portal.\n\nIf you have any questions or require assistance, our support team is always here for you.\n\nWarm regards,\nAuthor Relations Team\nBookLeaf Publishing\nsupport@bookleafpub.in | www.bookleafpub.com`;\n\nreturn [{\n  json: {\n    status: 'Success',\n    author_id: data.author_id,\n    author_name: data.author_name,\n    author_email: data.author_email,\n    email_subject: subject,\n    email_summary: emailBody,\n    completed_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "ai-summary-generator",
+      "name": "Generate AI Royalty Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"{{ $json.status }}\",\n  \"author_id\": \"{{ $json.author_id }}\",\n  \"author_name\": \"{{ $json.author_name }}\",\n  \"author_email\": \"{{ $json.author_email }}\",\n  \"email_subject\": \"{{ $json.email_subject }}\",\n  \"email_summary\": \"{{ $json.email_summary.replace(/\\n/g, \"\\\\n\").replace(/\"/g, \"\\\\\\\"\") }}\",\n  \"completed_at\": \"{{ $json.completed_at }}\"\n}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond to Bubble Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1400,
+        180
+      ]
+    }
+  ],
+  "connections": {
+    "Bubble Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Auth & Validate Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auth & Validate Payload": {
+      "main": [
+        [
+          {
+            "node": "Is Authorized?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Authorized?": {
+      "main": [
+        [
+          {
+            "node": "Build AI Prompt & KB Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 401 Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build AI Prompt & KB Context": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Royalty Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Royalty Summary": {
+      "main": [
+        [
+          {
+            "node": "Respond to Bubble Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

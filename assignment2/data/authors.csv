@@ -1,0 +1,11 @@
+author_id,name,email,phone,city,joined_date,total_books,total_copies_sold,total_royalty_earned,total_royalty_paid,total_royalty_pending,payout_status,has_pending_royalty
+AUTH001,Priya Sharma,priya.sharma@email.com,+91-98765-43210,Mumbai,2023-03-15,2,531,19908,16338,3570,Pending,yes
+AUTH002,Rohit Kapoor,rohit.kapoor@email.com,+91-87654-32109,Delhi,2022-11-08,2,2079,84024,71000,13024,Overdue,yes
+AUTH003,Ananya Reddy,ananya.reddy@email.com,+91-76543-21098,Hyderabad,2024-02-20,1,67,2546,0,2546,Overdue,yes
+AUTH004,Vikram Joshi,vikram.joshi@email.com,+91-65432-10987,Pune,2023-07-12,2,657,15195,11845,3350,Overdue,yes
+AUTH005,Meera Nair,meera.nair@email.com,+91-54321-09876,Kochi,2023-01-05,2,646,25295,22240,3055,Pending,yes
+AUTH006,Arjun Malhotra,arjun.malhotra@email.com,+91-43210-98765,Chandigarh,2024-06-01,1,88,2464,0,2464,Overdue,yes
+AUTH007,Sneha Kulkarni,sneha.kulkarni@email.com,+91-32109-87654,Bangalore,2022-09-18,3,2290,60865,53000,7865,Pending,yes
+AUTH008,Farhan Sheikh,farhan.sheikh@email.com,+91-21098-76543,Lucknow,2023-10-01,1,156,3120,3120,0,Fully Paid,no
+AUTH009,Kavita Deshmukh,kavita.deshmukh@email.com,+91-10987-65432,Nagpur,2024-04-10,2,34,850,0,850,Pending,yes
+AUTH010,Diya Chatterjee,diya.chatterjee@email.com,+91-09876-54321,Kolkata,2023-05-22,2,657,29115,25000,4115,Overdue,yes

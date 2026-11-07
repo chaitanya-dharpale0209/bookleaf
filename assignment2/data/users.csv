@@ -1,0 +1,12 @@
+email,name,role,author_id,city,phone
+admin@bookleafpub.in,BookLeaf Admin Operations,Admin,ADMIN001,Delhi,+91-11-2345-6789
+priya.sharma@email.com,Priya Sharma,Author,AUTH001,Mumbai,+91-98765-43210
+rohit.kapoor@email.com,Rohit Kapoor,Author,AUTH002,Delhi,+91-87654-32109
+ananya.reddy@email.com,Ananya Reddy,Author,AUTH003,Hyderabad,+91-76543-21098
+vikram.joshi@email.com,Vikram Joshi,Author,AUTH004,Pune,+91-65432-10987
+meera.nair@email.com,Meera Nair,Author,AUTH005,Kochi,+91-54321-09876
+arjun.malhotra@email.com,Arjun Malhotra,Author,AUTH006,Chandigarh,+91-43210-98765
+sneha.kulkarni@email.com,Sneha Kulkarni,Author,AUTH007,Bangalore,+91-32109-87654
+farhan.sheikh@email.com,Farhan Sheikh,Author,AUTH008,Lucknow,+91-21098-76543
+kavita.deshmukh@email.com,Kavita Deshmukh,Author,AUTH009,Nagpur,+91-10987-65432
+diya.chatterjee@email.com,Diya Chatterjee,Author,AUTH010,Kolkata,+91-09876-54321
